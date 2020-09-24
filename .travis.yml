@@ -13,20 +13,18 @@ addons:
     packages:
       - powershell
 
-cloneRD:
-  - git clone https://github.com/ReactiveDomain/reactive-domain
-  
 before_script:
 #  - powershell -executionpolicy unrestricted -File ./tools/CheckAssemblyVersion.ps1
   
 script: 
+  - git clone https://github.com/ReactiveDomain/reactive-domain
   - echo $TRAVIS_BRANCH
   - echo $TRAVIS_BUILD_DIR
   - echo $TRAVIS_PULL_REQUEST
   - echo $TRAVIS_PULL_REQUEST_BRANCH
   - echo $TRAVIS_EVENT_TYPE
   - dir 
-  - dotnet restore ./ReactiveDomain/package-and-deployment/src/ReactiveDomain.sln
+  - dotnet restore ./reactive-domain/src/ReactiveDomain.sln
   - dotnet msbuild ./ReactiveDomain/package-and-deployment/src/ReactiveDomain.sln -p:Configuration=Debug
   - dotnet msbuild ./ReactiveDomain/package-and-deployment/src/ReactiveDomain.sln -p:Configuration=Release
 
