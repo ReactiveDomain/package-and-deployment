@@ -23,10 +23,10 @@ if ($buildType -ne "api")
 }
 
 Write-Host ("Check Assembly script location is " + $PSScriptRoot)
-$nuget = $PSScriptRoot + "\..\src\.nuget\nuget.exe"
+$nuget = $PSScriptRoot + "\..\ReactiveDomain\src\.nuget\nuget.exe"
 
 # Get the assembly and file version from build.props on current branch 
-$buildProps = $PSScriptRoot + "\..\src\build.props" 
+$buildProps = $PSScriptRoot + "\..\ReactiveDomain\src\build.props" 
 $props = [xml] (get-content $buildProps -Encoding UTF8) 
 $RDVersion = $props.SelectSingleNode("//Project/PropertyGroup/AssemblyVersion") 
 
