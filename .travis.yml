@@ -25,8 +25,8 @@ script:
   - echo $TRAVIS_EVENT_TYPE
   - dir 
   - dotnet restore ./reactive-domain/src/ReactiveDomain.sln
-  - dotnet msbuild ./ReactiveDomain/package-and-deployment/src/ReactiveDomain.sln -p:Configuration=Debug
-  - dotnet msbuild ./ReactiveDomain/package-and-deployment/src/ReactiveDomain.sln -p:Configuration=Release
+  - dotnet msbuild ./reactive-domain/src/ReactiveDomain.sln -p:Configuration=Debug
+  - dotnet msbuild ./reactive-domain/src/ReactiveDomain.sln -p:Configuration=Release
 
 after_success:
   - powershell -executionpolicy unrestricted -File ./tools/CreateNuget.ps1
