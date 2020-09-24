@@ -15,11 +15,8 @@ addons:
 
 cloneRD:
   - md ReactiveDomain
-  - git clone https://github.com/ReactiveDomain/reactive-domain .\ReactiveDomain
-    
-buildRD:
- - build.cmd
-
+  - git clone https://github.com/ReactiveDomain/reactive-domain
+  
 before_script:
   - powershell -executionpolicy unrestricted -File ./tools/CheckAssemblyVersion.ps1
   
@@ -29,9 +26,9 @@ script:
   - echo $TRAVIS_PULL_REQUEST
   - echo $TRAVIS_PULL_REQUEST_BRANCH
   - echo $TRAVIS_EVENT_TYPE
-  - dotnet restore ./ReactiveDomain/src/ReactiveDomain.sln
-  - dotnet msbuild ./ReactiveDomain/src/ReactiveDomain.sln -p:Configuration=Debug
-  - dotnet msbuild ./ReactiveDomain/src/ReactiveDomain.sln -p:Configuration=Release
+  - dotnet restore ./Reactive-Domain/src/ReactiveDomain.sln
+  - dotnet msbuild ./Reactive-Domain/src/ReactiveDomain.sln -p:Configuration=Debug
+  - dotnet msbuild ./Reactive-Domain/src/ReactiveDomain.sln -p:Configuration=Release
 
 after_success:
   - powershell -executionpolicy unrestricted -File ./tools/CreateNuget.ps1
