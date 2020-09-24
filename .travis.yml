@@ -25,6 +25,7 @@ script:
   - echo $TRAVIS_PULL_REQUEST
   - echo $TRAVIS_PULL_REQUEST_BRANCH
   - echo $TRAVIS_EVENT_TYPE
+  - dir 
   - dotnet restore ./ReactiveDomain/package-and-deployment/src/ReactiveDomain.sln
   - dotnet msbuild ./ReactiveDomain/package-and-deployment/src/ReactiveDomain.sln -p:Configuration=Debug
   - dotnet msbuild ./ReactiveDomain/package-and-deployment/src/ReactiveDomain.sln -p:Configuration=Release
