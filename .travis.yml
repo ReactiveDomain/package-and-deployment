@@ -18,7 +18,7 @@ cloneRD:
   - git clone https://github.com/ReactiveDomain/reactive-domain
   
 before_script:
-  - rem powershell -executionpolicy unrestricted -File ./tools/CheckAssemblyVersion.ps1
+#  - powershell -executionpolicy unrestricted -File ./tools/CheckAssemblyVersion.ps1
   
 script: 
   - echo $TRAVIS_BRANCH
