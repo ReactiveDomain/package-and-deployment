@@ -41,24 +41,25 @@ if ($buildType -eq "debug")
 }   
  
 Write-Host ("Powershell script location is " + $PSScriptRoot)
+# Should be ---> C:\Users\travis\build\ReactiveDomain\package-and-deployment\tools
 
-$ReactiveDomainDll = $PSScriptRoot + "\..\bld\$configuration\net472\ReactiveDomain.Core.dll"
+$ReactiveDomainDll = $PSScriptRoot + "\..\reactive-domain\bld\$configuration\net472\ReactiveDomain.Core.dll"
 $RDVersion = (Get-Item $ReactiveDomainDll).VersionInfo.FileVersion
-$ReactiveDomainNuspec = $PSScriptRoot + "\..\src\ReactiveDomain" + $nuspecExtension
-$ReactiveDomainTestingNuspec = $PSScriptRoot + "\..\src\ReactiveDomain.Testing" + $nuspecExtension
-$ReactiveDomainUINuspec = $PSScriptRoot + "\..\src\ReactiveDomain.UI" + $nuspecExtension
-$ReactiveDomainUITestingNuspec = $PSScriptRoot + "\..\src\ReactiveDomain.UI.Testing" + $nuspecExtension
+$ReactiveDomainNuspec = $PSScriptRoot + "\..\reactive-domain\src\ReactiveDomain" + $nuspecExtension
+$ReactiveDomainTestingNuspec = $PSScriptRoot + "\..\reactive-domain\src\ReactiveDomain.Testing" + $nuspecExtension
+$ReactiveDomainUINuspec = $PSScriptRoot + "\..\reactive-domain\src\ReactiveDomain.UI" + $nuspecExtension
+$ReactiveDomainUITestingNuspec = $PSScriptRoot + "\..\reactive-domain\src\ReactiveDomain.UI.Testing" + $nuspecExtension
 
-$RDFoundationProject = $PSScriptRoot + "\..\src\ReactiveDomain.Foundation\ReactiveDomain.Foundation.csproj"
-$RDMessagingProject = $PSScriptRoot + "\..\src\ReactiveDomain.Messaging\ReactiveDomain.Messaging.csproj"
-$RDPersistenceProject = $PSScriptRoot + "\..\src\ReactiveDomain.Persistence\ReactiveDomain.Persistence.csproj"
-$RDPrivateLedgerProject = $PSScriptRoot + "\..\src\ReactiveDomain.PrivateLedger\ReactiveDomain.PrivateLedger.csproj"
-$RDTransportProject = $PSScriptRoot + "\..\src\ReactiveDomain.Transport\ReactiveDomain.Transport.csproj"
+$RDFoundationProject = $PSScriptRoot + "\..\reactive-domain\src\ReactiveDomain.Foundation\ReactiveDomain.Foundation.csproj"
+$RDMessagingProject = $PSScriptRoot + "\..\reactive-domain\src\ReactiveDomain.Messaging\ReactiveDomain.Messaging.csproj"
+$RDPersistenceProject = $PSScriptRoot + "\..\reactive-domain\src\ReactiveDomain.Persistence\ReactiveDomain.Persistence.csproj"
+$RDPrivateLedgerProject = $PSScriptRoot + "\..\reactive-domain\src\ReactiveDomain.PrivateLedger\ReactiveDomain.PrivateLedger.csproj"
+$RDTransportProject = $PSScriptRoot + "\..\reactive-domain\src\ReactiveDomain.Transport\ReactiveDomain.Transport.csproj"
 
-$ReactiveDomainTestingProject = $PSScriptRoot + "\..\src\ReactiveDomain.Testing\ReactiveDomain.Testing.csproj"
-$RDUIProject = $PSScriptRoot + "\..\src\ReactiveDomain.UI\ReactiveDomain.UI.csproj"
-$RDUITestingProject = $PSScriptRoot + "\..\src\ReactiveDomain.UI.Testing\ReactiveDomain.UI.Testing.csproj"
-$nuget = $PSScriptRoot + "\..\src\.nuget\nuget.exe"
+$ReactiveDomainTestingProject = $PSScriptRoot + "\..\reactive-domain\src\ReactiveDomain.Testing\ReactiveDomain.Testing.csproj"
+$RDUIProject = $PSScriptRoot + "\..\reactive-domain\src\ReactiveDomain.UI\ReactiveDomain.UI.csproj"
+$RDUITestingProject = $PSScriptRoot + "\..\reactive-domain\src\ReactiveDomain.UI.Testing\ReactiveDomain.UI.Testing.csproj"
+$nuget = $PSScriptRoot + "\..\reactive-domain\src\.nuget\nuget.exe"
 
 Write-Host ("Reactive Domain version is " + $RDVersion)
 Write-Host ("Build type is " + $buildType)
@@ -267,10 +268,10 @@ $versionString = $RDVersion
 
 # Push the nuget packages to nuget.org ******************************************************************************************
 Write-Host "Push nuget packages to nuget.org"
-$ReactiveDomainNupkg = $PSScriptRoot + "\..\ReactiveDomain." + $versionString + ".nupkg"
-$ReactiveDomainTestingNupkg = $PSScriptRoot + "\..\ReactiveDomain.Testing." + $versionString + ".nupkg"
-$ReactiveDomainUINupkg = $PSScriptRoot + "\..\ReactiveDomain.UI." + $versionString + ".nupkg"
-$ReactiveDomainUITestingNupkg = $PSScriptRoot + "\..\ReactiveDomain.UI.Testing." + $versionString + ".nupkg"
+$ReactiveDomainNupkg = $PSScriptRoot + "\..\reactive-domain\ReactiveDomain." + $versionString + ".nupkg"
+$ReactiveDomainTestingNupkg = $PSScriptRoot + "\..\reactive-domain\ReactiveDomain.Testing." + $versionString + ".nupkg"
+$ReactiveDomainUINupkg = $PSScriptRoot + "\..\reactive-domain\ReactiveDomain.UI." + $versionString + ".nupkg"
+$ReactiveDomainUITestingNupkg = $PSScriptRoot + "\..\reactive-domain\ReactiveDomain.UI.Testing." + $versionString + ".nupkg"
 
 & $nuget push $ReactiveDomainNupkg -Source "https://api.nuget.org/v3/index.json" -ApiKey $apikey 
 & $nuget push $ReactiveDomainTestingNupkg -Source "https://api.nuget.org/v3/index.json" -ApiKey $apikey 

@@ -29,4 +29,4 @@ script:
   - dotnet msbuild ./reactive-domain/src/ReactiveDomain.sln -p:Configuration=Release
 
 after_success:
-  - powershell -executionpolicy unrestricted -File ./tools/testCreate.ps1
+  - powershell -executionpolicy unrestricted -File ./tools/CreateNuget.ps1
