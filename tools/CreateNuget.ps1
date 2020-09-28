@@ -258,6 +258,7 @@ UpdateDependencyVersions $ReactiveDomainUITestingNuspec $RDUITestingProject
 
 # Pack the nuspec files to create the .nupkg files using the set versionString  *************************
 Write-Host "Packing reactivedomain nuget packages"
+Write-Host "Version string to use: " + $versionString
 $versionString = $RDVersion
 & $nuget pack $ReactiveDomainNuspec -Version $versionString
 & $nuget pack $ReactiveDomainTestingNuspec -Version $versionString
@@ -268,10 +269,19 @@ $versionString = $RDVersion
 
 # Push the nuget packages to nuget.org ******************************************************************************************
 Write-Host "Push nuget packages to nuget.org"
-$ReactiveDomainNupkg = $PSScriptRoot + "\..\ReactiveDomain." + $versionString + ".nupkg"
-$ReactiveDomainTestingNupkg = $PSScriptRoot + "\..\ReactiveDomain.Testing." + $versionString + ".nupkg"
-$ReactiveDomainUINupkg = $PSScriptRoot + "\..\ReactiveDomain.UI." + $versionString + ".nupkg"
-$ReactiveDomainUITestingNupkg = $PSScriptRoot + "\..\ReactiveDomain.UI.Testing." + $versionString + ".nupkg"
+
+$nupkgVersion = $versionString  
+$revision = $versionString.Split('.')[3]
+if ($revision -eq 0)	# Trim 0 off the because nuget pack command will do that with the nuget package version
+{
+	Write-Host "Trim 0 off version string"
+	$nupkgVersion = $versionString.SubString(0, $versionString.Length - 2)
+}
+
+$ReactiveDomainNupkg = $PSScriptRoot + "\..\ReactiveDomain." + $nupkgVersion + ".nupkg"
+$ReactiveDomainTestingNupkg = $PSScriptRoot + "\..\ReactiveDomain.Testing." + $nupkgVersion + ".nupkg"
+$ReactiveDomainUINupkg = $PSScriptRoot + "\..\ReactiveDomain.UI." + $nupkgVersion + ".nupkg"
+$ReactiveDomainUITestingNupkg = $PSScriptRoot + "\..\ReactiveDomain.UI.Testing." + $nupkgVersion + ".nupkg"
 
 & $nuget push $ReactiveDomainNupkg -Source "https://api.nuget.org/v3/index.json" -ApiKey $apikey 
 & $nuget push $ReactiveDomainTestingNupkg -Source "https://api.nuget.org/v3/index.json" -ApiKey $apikey 
