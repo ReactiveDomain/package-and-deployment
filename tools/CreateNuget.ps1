@@ -268,10 +268,10 @@ $versionString = $RDVersion
 
 # Push the nuget packages to nuget.org ******************************************************************************************
 Write-Host "Push nuget packages to nuget.org"
-$ReactiveDomainNupkg = $PSScriptRoot + "\..\reactive-domain\ReactiveDomain." + $versionString + ".nupkg"
-$ReactiveDomainTestingNupkg = $PSScriptRoot + "\..\reactive-domain\ReactiveDomain.Testing." + $versionString + ".nupkg"
-$ReactiveDomainUINupkg = $PSScriptRoot + "\..\reactive-domain\ReactiveDomain.UI." + $versionString + ".nupkg"
-$ReactiveDomainUITestingNupkg = $PSScriptRoot + "\..\reactive-domain\ReactiveDomain.UI.Testing." + $versionString + ".nupkg"
+$ReactiveDomainNupkg = $PSScriptRoot + "\..\ReactiveDomain." + $versionString + ".nupkg"
+$ReactiveDomainTestingNupkg = $PSScriptRoot + "\..\ReactiveDomain.Testing." + $versionString + ".nupkg"
+$ReactiveDomainUINupkg = $PSScriptRoot + "\..\ReactiveDomain.UI." + $versionString + ".nupkg"
+$ReactiveDomainUITestingNupkg = $PSScriptRoot + "\..\ReactiveDomain.UI.Testing." + $versionString + ".nupkg"
 
 & $nuget push $ReactiveDomainNupkg -Source "https://api.nuget.org/v3/index.json" -ApiKey $apikey 
 & $nuget push $ReactiveDomainTestingNupkg -Source "https://api.nuget.org/v3/index.json" -ApiKey $apikey 

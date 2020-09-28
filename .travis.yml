@@ -14,7 +14,7 @@ addons:
       - powershell
 
 before_script:
-#  - powershell -executionpolicy unrestricted -File ./tools/CheckAssemblyVersion.ps1
+  - powershell -executionpolicy unrestricted -File ./tools/CheckAssemblyVersion.ps1
   
 script: 
   - git clone https://github.com/ReactiveDomain/reactive-domain
