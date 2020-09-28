@@ -14,10 +14,10 @@ addons:
       - powershell
 
 before_script:
+  - git clone https://github.com/ReactiveDomain/reactive-domain
   - powershell -executionpolicy unrestricted -File ./tools/CheckAssemblyVersion.ps1
   
 script: 
-  - git clone https://github.com/ReactiveDomain/reactive-domain
   - echo $TRAVIS_BRANCH
   - echo $TRAVIS_BUILD_DIR
   - echo $TRAVIS_PULL_REQUEST
