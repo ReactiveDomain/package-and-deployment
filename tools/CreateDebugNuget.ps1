@@ -36,7 +36,7 @@ Write-Host ("*********************   Begin Create Nuget script   ***************
 
 Write-Host ("Copy ReactiveDomain build folder and nuspec files to a temp directory")
 
-$TempNum = Get-Random -Minimum 100 -Maximum 1000
+$TempNum = Get-Random -Minimum 1000 -Maximum 10000
 $TempDir = Join-Path $env:temp $TempNum.ToString()
 $buildDir = Join-Path $ReactiveDomainRepo "bld"
 $sourceDir = Join-Path $ReactiveDomainRepo "src"
@@ -49,7 +49,6 @@ $sourceRDNuspec = Join-Path $sourceDir "ReactiveDomain.Debug.nuspec"
 $sourceRDTestNuspec = Join-Path $sourceDir "ReactiveDomain.Testing.Debug.nuspec"
 $sourceRDUINuspec = Join-Path $sourceDir "ReactiveDomain.UI.Debug.nuspec"
 $sourceRDUITestNuspec = Join-Path $sourceDir "ReactiveDomain.UI.Testing.Debug.nuspec"
-
 $ReactiveDomainNuspec = Join-Path $tempSourceDir "ReactiveDomain.Debug.nuspec"
 $ReactiveDomainTestingNuspec = Join-Path $tempSourceDir "ReactiveDomain.Testing.Debug.nuspec"
 $ReactiveDomainUINuspec = Join-Path $tempSourceDir "ReactiveDomain.UI.Debug.nuspec"
@@ -62,17 +61,27 @@ Copy-Item $sourceRDUITestNuspec -Destination $ReactiveDomainUITestingNuspec
 
 Write-Host ("Powershell script location is " + $PSScriptRoot)
 
-$RDMajor = Get-Random -Maximum 100
-$RDMinor = Get-Random -Maximum 100
-$RDRevision = Get-Random -Maximum 100
-$RDVersion = $RDMajor.ToString() + "."+ $RDMinor.ToString() + "." + $RDRevision.ToString()
+# Get the assembly and file version from build.props on current branch 
+$buildProps = $ReactiveDomainRepo + "\src\build.props" 
+$props = [xml] (get-content $buildProps -Encoding UTF8) 
+$localRDVersion = $props.SelectSingleNode("//Project/PropertyGroup/AssemblyVersion") 
+
+Write-Host ("Local Assembly Version node is " + $localRDVersion.InnerText ) 
+
+$major = $localRDVersion.InnerText.Split('.')[0]
+$minor = $localRDVersion.InnerText.Split('.')[1]
+$build = $localRDVersion.InnerText.Split('.')[2]
+$revision = $localRDVersion.InnerText.Split('.')[3]
+
+$RDVersion = $major + "." + $minor + "." + $build + "." + $revision + "-local" + $TempNum.ToString()
+
+Write-Host "Debug ReactiveDomain nuget version is: " $RDVersion
 
 $RDFoundationProject = $ReactiveDomainRepo + "\src\ReactiveDomain.Foundation\ReactiveDomain.Foundation.csproj"
 $RDMessagingProject = $ReactiveDomainRepo + "\src\ReactiveDomain.Messaging\ReactiveDomain.Messaging.csproj"
 $RDPersistenceProject = $ReactiveDomainRepo + "\src\ReactiveDomain.Persistence\ReactiveDomain.Persistence.csproj"
 $RDPrivateLedgerProject = $ReactiveDomainRepo + "\src\ReactiveDomain.PrivateLedger\ReactiveDomain.PrivateLedger.csproj"
 $RDTransportProject = $ReactiveDomainRepo + "\src\ReactiveDomain.Transport\ReactiveDomain.Transport.csproj"
-
 $ReactiveDomainTestingProject = $ReactiveDomainRepo + "\src\ReactiveDomain.Testing\ReactiveDomain.Testing.csproj"
 $RDUIProject = $ReactiveDomainRepo + "\src\ReactiveDomain.UI\ReactiveDomain.UI.csproj"
 $RDUITestingProject = $ReactiveDomainRepo + "\src\ReactiveDomain.UI.Testing\ReactiveDomain.UI.Testing.csproj"
