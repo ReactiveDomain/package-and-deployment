@@ -309,4 +309,4 @@ $versionString = $RDVersion
 # *******************************************************************************************************************************
 
 # Cleanup the temp directory
-# Remove-Item $TempDir -Recurse 
+Remove-Item $TempDir -Recurse 
