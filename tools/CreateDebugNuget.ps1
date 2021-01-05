@@ -11,7 +11,7 @@
 #           Note: If no valid path is passed in the script will ask for a valid path
 
 
-$configuration = "Release"
+$configuration = "Debug"
 $nuspecExtension = ".nuspec"
 $masterString = "master"
 $ReactiveDomainRepo = ""
@@ -45,15 +45,19 @@ $tempSourceDir = Join-Path $TempDir "src"
 New-Item -ItemType "directory" -Path $tempSourceDir
 Copy-Item -Path $buildDir -Destination $tempBuildDir -Recurse
 
+#source nuspec file paths
 $sourceRDNuspec = Join-Path $sourceDir "ReactiveDomain.Debug.nuspec"
 $sourceRDTestNuspec = Join-Path $sourceDir "ReactiveDomain.Testing.Debug.nuspec"
 $sourceRDUINuspec = Join-Path $sourceDir "ReactiveDomain.UI.Debug.nuspec"
 $sourceRDUITestNuspec = Join-Path $sourceDir "ReactiveDomain.UI.Testing.Debug.nuspec"
+
+#target nuspec file paths in temp dir
 $ReactiveDomainNuspec = Join-Path $tempSourceDir "ReactiveDomain.Debug.nuspec"
 $ReactiveDomainTestingNuspec = Join-Path $tempSourceDir "ReactiveDomain.Testing.Debug.nuspec"
 $ReactiveDomainUINuspec = Join-Path $tempSourceDir "ReactiveDomain.UI.Debug.nuspec"
 $ReactiveDomainUITestingNuspec = Join-Path $tempSourceDir "ReactiveDomain.UI.Testing.Debug.nuspec"
 
+#copy nuspec files to temp
 Copy-Item $sourceRDNuspec -Destination $ReactiveDomainNuspec
 Copy-Item $sourceRDTestNuspec -Destination $ReactiveDomainTestingNuspec
 Copy-Item $sourceRDUINuspec -Destination $ReactiveDomainUINuspec
@@ -62,6 +66,7 @@ Copy-Item $sourceRDUITestNuspec -Destination $ReactiveDomainUITestingNuspec
 Write-Host ("Powershell script location is " + $PSScriptRoot)
 
 # Get the assembly and file version from build.props on current branch 
+# N.B. this is sourced from build.props <AssemblyVersion/> not the projects or other files
 $buildProps = $ReactiveDomainRepo + "\src\build.props" 
 $props = [xml] (get-content $buildProps -Encoding UTF8) 
 $localRDVersion = $props.SelectSingleNode("//Project/PropertyGroup/AssemblyVersion") 
@@ -77,10 +82,10 @@ $RDVersion = $major + "." + $minor + "." + $build + "." + $revision + "-local" +
 
 Write-Host "Debug ReactiveDomain nuget version is: " $RDVersion
 
+#list of target projects
 $RDFoundationProject = $ReactiveDomainRepo + "\src\ReactiveDomain.Foundation\ReactiveDomain.Foundation.csproj"
 $RDMessagingProject = $ReactiveDomainRepo + "\src\ReactiveDomain.Messaging\ReactiveDomain.Messaging.csproj"
 $RDPersistenceProject = $ReactiveDomainRepo + "\src\ReactiveDomain.Persistence\ReactiveDomain.Persistence.csproj"
-$RDPrivateLedgerProject = $ReactiveDomainRepo + "\src\ReactiveDomain.PrivateLedger\ReactiveDomain.PrivateLedger.csproj"
 $RDTransportProject = $ReactiveDomainRepo + "\src\ReactiveDomain.Transport\ReactiveDomain.Transport.csproj"
 $ReactiveDomainTestingProject = $ReactiveDomainRepo + "\src\ReactiveDomain.Testing\ReactiveDomain.Testing.csproj"
 $RDUIProject = $ReactiveDomainRepo + "\src\ReactiveDomain.UI\ReactiveDomain.UI.csproj"
@@ -153,19 +158,15 @@ function GetPackageRefFromProject([string]$Id, [string]$CsProj, [string]$Framewo
         $compOperator = "!="
     }
 
-    if ($currentCondition -match "net452")
+    
+    if ($currentCondition -match "net48")
     {
-        $currentFramework = "net452"
+        $currentFramework = "net48"
     }
 
-    if ($currentCondition -match "net472")
+    if ($currentCondition -match "netstandard2.1")
     {
-        $currentFramework = "net472"
-    }
-
-    if ($currentCondition -match "netstandard2.0")
-    {
-        $currentFramework = "netstandard2.0"
+        $currentFramework = "netstandard2.1"
     }
 
     $myObj = New-Object -TypeName PackagRef 
@@ -191,16 +192,13 @@ function UpdateDependencyVersions([string]$Nuspec, [string]$CsProj)
     $dependencyNodes = $xml.package.metadata.dependencies.group.dependency
 
 
-    $f452 = $xml | Select-XML -XPath "//package/metadata/dependencies/group[@targetFramework='.NETFramework4.5.2']"
-    $framework452Nodes = $f452.Node.ChildNodes
+    $f48 = $xml | Select-XML -XPath "//package/metadata/dependencies/group[@targetFramework='.NETFramework4.8.0']"
+    $framework48Nodes = $f48.Node.ChildNodes
 
-    $f472 = $xml | Select-XML -XPath "//package/metadata/dependencies/group[@targetFramework='.NETFramework4.7.2']"
-    $framework472Nodes = $f472.Node.ChildNodes
+    $netstandard21 = $xml | Select-XML -XPath "//package/metadata/dependencies/group[@targetFramework='.NETStandard2.1']"
+    $netstandard21Nodes = $netstandard21.Node.ChildNodes
 
-    $netstandard2 = $xml | Select-XML -XPath "//package/metadata/dependencies/group[@targetFramework='.NETStandard2.0']"
-    $netstandard2Nodes = $netstandard2.Node.ChildNodes
-
-    foreach($refnode in $framework452Nodes)
+    foreach($refnode in $framework48Nodes)
     {
         if ( $refnode.id -match "ReactiveDomain")
         {
@@ -208,35 +206,17 @@ function UpdateDependencyVersions([string]$Nuspec, [string]$CsProj)
             continue
         }
 
-        $pRef = GetPackageRefFromProject $refnode.id $CsProj "net452"
+        $pRef = GetPackageRefFromProject $refnode.id $CsProj "net48"
         if ((($pRef.ComparisonOperator -eq "" -or $pRef.Framework -eq "") -or 
-            ($pRef.ComparisonOperator -eq "==" -and $pRef.Framework -eq "net452") -or 
-            ($pRef.ComparisonOperator -eq "!=" -and $pRef.Framework -ne "net452")) -and
-            ($pRef.version -ne ""))
-        {
-            $refnode.version = $pRef.Version
-        }       
-    }
-
-    foreach($refnode in $framework472Nodes)
-    {
-        if ( $refnode.id -match "ReactiveDomain")
-        {
-            $refnode.version = $RDVersion
-            continue
-        }
-
-        $pRef = GetPackageRefFromProject $refnode.id $CsProj "net472"
-        if ((($pRef.ComparisonOperator -eq "" -or $pRef.Framework -eq "") -or 
-            ($pRef.ComparisonOperator -eq "==" -and $pRef.Framework -eq "net472") -or 
-            ($pRef.ComparisonOperator -eq "!=" -and $pRef.Framework -ne "net472")) -and
+            ($pRef.ComparisonOperator -eq "==" -and $pRef.Framework -eq "net48") -or 
+            ($pRef.ComparisonOperator -eq "!=" -and $pRef.Framework -ne "net48")) -and
             ($pRef.version -ne ""))
         {
             $refnode.version = $pRef.Version
         }      
     }
 
-    foreach($refnode in $netstandard2Nodes)
+    foreach($refnode in $netstandard21Nodes)
     {
         if ( $refnode.id -match "ReactiveDomain")
         {
@@ -244,10 +224,10 @@ function UpdateDependencyVersions([string]$Nuspec, [string]$CsProj)
             continue
         }
         
-        $pRef = GetPackageRefFromProject $refnode.id $CsProj "netstandard2.0"
+        $pRef = GetPackageRefFromProject $refnode.id $CsProj "netstandard2.1"
         if ((($pRef.ComparisonOperator -eq "" -or $pRef.Framework -eq "") -or 
-            ($pRef.ComparisonOperator -eq "==" -and $pRef.Framework -eq "netstandard2.0") -or 
-            ($pRef.ComparisonOperator -eq "!=" -and $pRef.Framework -ne "netstandard2.0")) -and
+            ($pRef.ComparisonOperator -eq "==" -and $pRef.Framework -eq "netstandard2.1") -or 
+            ($pRef.ComparisonOperator -eq "!=" -and $pRef.Framework -ne "netstandard2.1")) -and
             ($pRef.version -ne ""))
         { 
             $refnode.version = $pRef.Version
@@ -258,13 +238,15 @@ function UpdateDependencyVersions([string]$Nuspec, [string]$CsProj)
     Write-Host "Updated dependency versions of: $Nuspec"
 }
 
+
 # Update the dependency versions in the nuspec files ****************************************************
+# N.B. this *overwrites* the dependencies listed in the NuSpec files to make the current with the project
+# any *new* dependecies the project require will also need to added to the NuSpec files or this will skip them
 
 # These all go into updating the main ReactiveDomain.nuspec
 UpdateDependencyVersions $ReactiveDomainNuspec $RDFoundationProject  
 UpdateDependencyVersions $ReactiveDomainNuspec $RDMessagingProject  
 UpdateDependencyVersions $ReactiveDomainNuspec $RDPersistenceProject 
-UpdateDependencyVersions $ReactiveDomainNuspec $RDPrivateLedgerProject 
 UpdateDependencyVersions $ReactiveDomainNuspec $RDTransportProject 
 
 # These go into updating the ReactiveDomainUI.nuspec
