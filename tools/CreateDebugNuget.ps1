@@ -50,18 +50,21 @@ $sourceRDNuspec = Join-Path $sourceDir "ReactiveDomain.Debug.nuspec"
 $sourceRDTestNuspec = Join-Path $sourceDir "ReactiveDomain.Testing.Debug.nuspec"
 $sourceRDUINuspec = Join-Path $sourceDir "ReactiveDomain.UI.Debug.nuspec"
 $sourceRDUITestNuspec = Join-Path $sourceDir "ReactiveDomain.UI.Testing.Debug.nuspec"
+$sourceRDIdentityStorageNuspec = Join-Path $sourceDir "ReactiveDomain.IdentityStorage.Debug.nuspec"
 
 #target nuspec file paths in temp dir
 $ReactiveDomainNuspec = Join-Path $tempSourceDir "ReactiveDomain.Debug.nuspec"
 $ReactiveDomainTestingNuspec = Join-Path $tempSourceDir "ReactiveDomain.Testing.Debug.nuspec"
 $ReactiveDomainUINuspec = Join-Path $tempSourceDir "ReactiveDomain.UI.Debug.nuspec"
 $ReactiveDomainUITestingNuspec = Join-Path $tempSourceDir "ReactiveDomain.UI.Testing.Debug.nuspec"
+$ReactiveDomainIdentityStorageNuspec = Join-Path $tempSourceDir "ReactiveDomain.IdentityStorage.Debug.nuspec"
 
 #copy nuspec files to temp
 Copy-Item $sourceRDNuspec -Destination $ReactiveDomainNuspec
 Copy-Item $sourceRDTestNuspec -Destination $ReactiveDomainTestingNuspec
 Copy-Item $sourceRDUINuspec -Destination $ReactiveDomainUINuspec
 Copy-Item $sourceRDUITestNuspec -Destination $ReactiveDomainUITestingNuspec
+Copy-Item $sourceRDIdentityStorageNuspec -Destination $ReactiveDomainIdentityStorageNuspec
 
 Write-Host ("Powershell script location is " + $PSScriptRoot)
 
@@ -90,6 +93,8 @@ $RDTransportProject = $ReactiveDomainRepo + "\src\ReactiveDomain.Transport\React
 $ReactiveDomainTestingProject = $ReactiveDomainRepo + "\src\ReactiveDomain.Testing\ReactiveDomain.Testing.csproj"
 $RDUIProject = $ReactiveDomainRepo + "\src\ReactiveDomain.UI\ReactiveDomain.UI.csproj"
 $RDUITestingProject = $ReactiveDomainRepo + "\src\ReactiveDomain.UI.Testing\ReactiveDomain.UI.Testing.csproj"
+$RDUsersProject = $ReactiveDomainRepo + "\src\ReactiveDomain.Users\ReactiveDomain.Users.csproj"
+$RDIdentityStorageProject = $ReactiveDomainRepo + "\src\ReactiveDomain.IdentityServer4.Storage\ReactiveDomain.IdentityServer4.Storage.csproj"
 $nuget = $ReactiveDomainRepo + "\src\.nuget\nuget.exe"
 
 Write-Host ("Reactive Domain version is " + $RDVersion)
@@ -169,6 +174,11 @@ function GetPackageRefFromProject([string]$Id, [string]$CsProj, [string]$Framewo
         $currentFramework = "netstandard2.1"
     }
 
+     if ($currentCondition -match "netcoreapp3.1")
+    {
+        $currentFramework = "netcoreapp3.1"
+    }
+
     $myObj = New-Object -TypeName PackagRef 
     $myObj.Version = $currentVersion
     $myObj.ComparisonOperator = $compOperator 
@@ -191,13 +201,10 @@ function UpdateDependencyVersions([string]$Nuspec, [string]$CsProj)
     [xml]$xml = Get-Content -Path $Nuspec -Encoding UTF8
     $dependencyNodes = $xml.package.metadata.dependencies.group.dependency
 
-
+    #framework 48 processing
     $f48 = $xml | Select-XML -XPath "//package/metadata/dependencies/group[@targetFramework='.NETFramework4.8.0']"
     $framework48Nodes = $f48.Node.ChildNodes
-
-    $netstandard21 = $xml | Select-XML -XPath "//package/metadata/dependencies/group[@targetFramework='.NETStandard2.1']"
-    $netstandard21Nodes = $netstandard21.Node.ChildNodes
-
+    
     foreach($refnode in $framework48Nodes)
     {
         if ( $refnode.id -match "ReactiveDomain")
@@ -215,7 +222,11 @@ function UpdateDependencyVersions([string]$Nuspec, [string]$CsProj)
             $refnode.version = $pRef.Version
         }      
     }
-
+    
+    #netstandard2.1 processing
+    $netstandard21 = $xml | Select-XML -XPath "//package/metadata/dependencies/group[@targetFramework='.NETStandard2.1']"
+    $netstandard21Nodes = $netstandard21.Node.ChildNodes
+    
     foreach($refnode in $netstandard21Nodes)
     {
         if ( $refnode.id -match "ReactiveDomain")
@@ -233,7 +244,27 @@ function UpdateDependencyVersions([string]$Nuspec, [string]$CsProj)
             $refnode.version = $pRef.Version
         }      
     }
-
+    #netcoreapp3.1 processing
+    $netcore31 = $xml | Select-XML -XPath "//package/metadata/dependencies/group[@targetFramework='netcoreapp3.1']"
+    $netcore31Nodes = $netcore31.Node.ChildNodes
+    
+    foreach($refnode in $netcore31Nodes)
+    {
+        if ( $refnode.id -match "ReactiveDomain")
+        {
+            $refnode.version = $RDVersion
+            continue
+        }
+        
+        $pRef = GetPackageRefFromProject $refnode.id $CsProj "netcoreapp3.1"
+        if ((($pRef.ComparisonOperator -eq "" -or $pRef.Framework -eq "") -or 
+            ($pRef.ComparisonOperator -eq "==" -and $pRef.Framework -eq "netcoreapp3.1") -or 
+            ($pRef.ComparisonOperator -eq "!=" -and $pRef.Framework -ne "netcoreapp3.1")) -and
+            ($pRef.version -ne ""))
+        { 
+            $refnode.version = $pRef.Version
+        }      
+    }
     $xml.Save($Nuspec)
     Write-Host "Updated dependency versions of: $Nuspec"
 }
@@ -248,6 +279,7 @@ UpdateDependencyVersions $ReactiveDomainNuspec $RDFoundationProject
 UpdateDependencyVersions $ReactiveDomainNuspec $RDMessagingProject  
 UpdateDependencyVersions $ReactiveDomainNuspec $RDPersistenceProject 
 UpdateDependencyVersions $ReactiveDomainNuspec $RDTransportProject 
+UpdateDependencyVersions $ReactiveDomainNuspec $RDUsersProject 
 
 # These go into updating the ReactiveDomainUI.nuspec
 UpdateDependencyVersions $ReactiveDomainUINuspec $RDUIProject 
@@ -257,6 +289,10 @@ UpdateDependencyVersions $ReactiveDomainTestingNuspec $ReactiveDomainTestingProj
 
 # These go into updating the ReactiveDomain.UI.Testing.nuspec
 UpdateDependencyVersions $ReactiveDomainUITestingNuspec $RDUITestingProject 
+
+# These go into updating the ReactiveDomain.IdentityStorage.nuspec
+UpdateDependencyVersions $ReactiveDomainIdentityStorageNuspec $RDIdentityStorageProject 
+
 
 # *******************************************************************************************************
 
@@ -268,8 +304,9 @@ $versionString = $RDVersion
 & $nuget pack $ReactiveDomainTestingNuspec -Version $versionString
 & $nuget pack $ReactiveDomainUINuspec -Version $versionString
 & $nuget pack $ReactiveDomainUITestingNuspec -Version $versionString
+& $nuget pack $ReactiveDomainIdentityStorageNuspec -Version $versionString
 
 # *******************************************************************************************************************************
 
 # Cleanup the temp directory
-Remove-Item $TempDir -Recurse 
+# Remove-Item $TempDir -Recurse 
