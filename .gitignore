@@ -2,3 +2,6 @@
 *.nupkg
 /tools/.vs/ProjectSettings.json
 /tools/.vs/slnx.sqlite
+/.vs
+/tools/.vs/tools/v16/.suo
+/tools/.vs

@@ -10,6 +10,8 @@
 # args[0]: - the path to the reactive-domain repo
 #           Note: If no valid path is passed in the script will ask for a valid path
 
+# args[1]: - the desired build suffix i.e. '-beta5'
+#           Note: if no suffix is specified the suffix will be '-local{tempnumber}'
 
 $configuration = "Debug"
 $nuspecExtension = ".nuspec"
@@ -31,12 +33,21 @@ else
 		$ReactiveDomainRepo = Read-Host -Prompt 'Input valid path to reactiveDomain repo'
 	}
 }
-
+$buildSuffix = ""
+$TempNum = Get-Random -Minimum 1000 -Maximum 10000
+if ($args[1] -eq $null )
+{	
+	$buildSuffix = "-local" + $TempNum.ToString()
+}
+else
+{
+	$buildSuffix = $args[1]
+}
 Write-Host ("*********************   Begin Create Nuget script   **************************************")  
 
 Write-Host ("Copy ReactiveDomain build folder and nuspec files to a temp directory")
 
-$TempNum = Get-Random -Minimum 1000 -Maximum 10000
+
 $TempDir = Join-Path $env:temp $TempNum.ToString()
 $buildDir = Join-Path $ReactiveDomainRepo "bld"
 $sourceDir = Join-Path $ReactiveDomainRepo "src"
@@ -81,7 +92,7 @@ $minor = $localRDVersion.InnerText.Split('.')[1]
 $build = $localRDVersion.InnerText.Split('.')[2]
 $revision = $localRDVersion.InnerText.Split('.')[3]
 
-$RDVersion = $major + "." + $minor + "." + $build + "." + $revision + "-local" + $TempNum.ToString()
+$RDVersion = $major + "." + $minor + "." + $build + "." + $revision + $buildSuffix
 
 Write-Host "Debug ReactiveDomain nuget version is: " $RDVersion
 
